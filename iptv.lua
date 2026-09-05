@@ -400,6 +400,7 @@ function in_array(array, value)
 end
 
 function mylower(s)
+  if s == nil then return "" end
   local res,n =  string.gsub(s,utf8_char,function (c) 
                                     return utf8_uc_lc[c]
                                  end)
@@ -407,6 +408,7 @@ function mylower(s)
 end
 
 function myupper(s)
+  if s == nil then return "" end
   local res,n =  string.gsub(s,utf8_char,function (c) 
                                     return utf8_lc_uc[c]
                                  end)
