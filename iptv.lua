@@ -225,6 +225,7 @@ local playlister = {
       self:sortfavs()
     end
     pattern = ""
+    self:buildlower()
     self.plsfiltered = tablekeys(self.pls)
   end,
 
@@ -286,13 +287,30 @@ local playlister = {
     self.pls = favs
   end,
 
-  filter = function(self)
-    self.plsfiltered={}
+  buildlower = function(self)
+    -- Cache the lowercased titles: mylower() is called once per entry
+    -- instead of once per entry on every keystroke.
+    self.plslower = {}
     for i,v in ipairs(self.pls) do
-      if string.match(mylower(v.title),'.*'..prepat(pattern)..'.*') then
-        table.insert(self.plsfiltered,i)
+      self.plslower[i] = mylower(v.title)
+    end
+  end,
+
+  filter = function(self)
+    if not self.plslower then self:buildlower() end
+    local lower = self.plslower
+    local pat = pattern
+    local out = {}
+    local n = 0
+    for i=1,#self.pls do
+      -- Plain find: no pattern engine, which is why prepat() is not
+      -- needed here -- it only escaped magic chars to force a literal match.
+      if string.find(lower[i], pat, 1, true) then
+        n = n + 1
+        out[n] = i
       end
     end
+    self.plsfiltered = out
     self.wndstart=1
     self.cursor=0
   end,
@@ -400,6 +418,7 @@ function in_array(array, value)
 end
 
 function mylower(s)
+  if s == nil then return "" end
   local res,n =  string.gsub(s,utf8_char,function (c) 
                                     return utf8_uc_lc[c]
                                  end)
@@ -407,6 +426,7 @@ function mylower(s)
 end
 
 function myupper(s)
+  if s == nil then return "" end
   local res,n =  string.gsub(s,utf8_char,function (c) 
                                     return utf8_lc_uc[c]
                                  end)
